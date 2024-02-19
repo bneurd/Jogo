@@ -1,4 +1,5 @@
 import pygame
+from pylsl import StreamInlet, resolve_stream
 
 # Initialize Pygame
 pygame.init()
@@ -37,6 +38,12 @@ phase2_duration = 8  # 8 seconds for phase 2
 # Flag to track whether music has been played in phase 2
 music_played = False
 
+# Get stream on the lab network
+streams = resolve_stream('type', 'Markers')
+
+# create a new inlet to read from the stream
+inlet = StreamInlet(streams[0])
+
 # Classes
 class Foguete(pygame.sprite.Sprite):
     def __init__(self):
@@ -63,8 +70,8 @@ class Foguete(pygame.sprite.Sprite):
         self.rect.y = max(0, min(self.rect.y, height - self.rect.height))
 
 # Main game loop
-for trial in range(1, num_trials + 1):
-
+for trial in range(1, num_trials + 1): 
+    
     # Reset phase variables for each trial
     current_phase = 1
     start_time = pygame.time.get_ticks()
@@ -80,6 +87,9 @@ for trial in range(1, num_trials + 1):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        
+        sample, timestamp = inlet.pull_sample()
+        print("got %s at time %s" % (sample[0], timestamp))
 
         keys = pygame.key.get_pressed()
         foguete.update(keys)
