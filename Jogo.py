@@ -16,7 +16,7 @@ background = pygame.image.load('Background.png')
 background = pygame.transform.scale(background, (width - 10, height - 50))
 
 # Sounds 
-barulho_fase2 = pygame.mixer.Sound('smw_kick.wav')
+# barulho_fase2 = pygame.mixer.Sound('smw_kick.wav')
 
 # Colors
 white = (255, 255, 255)
@@ -104,7 +104,7 @@ for trial in range(1, num_trials + 1):
 
             # Play music in phase 2 if it hasn't been played yet
             if not music_played:
-                barulho_fase2.play()
+                # barulho_fase2.play()
                 music_played = True  # Set the flag to indicate that music has been played
 
             # Draw elements during the second phase
