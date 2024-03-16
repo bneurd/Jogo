@@ -1,4 +1,6 @@
 import pygame
+import random
+from pylsl import StreamInlet, resolve_stream
 
 # Initialize Pygame
 pygame.init()
@@ -16,7 +18,7 @@ background = pygame.image.load('Background.png')
 background = pygame.transform.scale(background, (width - 10, height - 50))
 
 # Sounds 
-barulho_fase2 = pygame.mixer.Sound('smw_kick.wav')
+barulho_phase2 = pygame.mixer.Sound('smw_kick.wav')
 
 # Colors
 white = (255, 255, 255)
@@ -37,7 +39,31 @@ phase2_duration = 8  # 8 seconds for phase 2
 # Flag to track whether music has been played in phase 2
 music_played = False
 
-# Classes
+# Get stream on the lab network
+streams = resolve_stream('type', 'Markers')
+
+# create a new inlet to read from the stream
+inlet = StreamInlet(streams[0])
+
+last_direction = None  # Initialize the last chosen direction
+
+# Function to choose the direction of the triangle
+def choose_triangle_direction():
+    global last_direction
+    
+    # Define the options: 1 for pointing up, 2 for pointing down
+    options = [1, 2]
+    
+    # If the last two directions were the same, choose the opposite
+    if last_direction is not None:
+        options.remove(last_direction)
+    
+    # Randomly choose between the remaining options
+    direction = random.choice(options)
+    last_direction = direction
+    return direction
+
+# Class for the spaceship
 class Foguete(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -81,6 +107,9 @@ for trial in range(1, num_trials + 1):
             if event.type == pygame.QUIT:
                 running = False
 
+         sample, timestamp = inlet.pull_sample()
+         print("got %s at time %s" % (sample[0], timestamp))
+
         keys = pygame.key.get_pressed()
         foguete.update(keys)
 
@@ -98,13 +127,16 @@ for trial in range(1, num_trials + 1):
                 current_phase = 2
                 start_phase2_time = pygame.time.get_ticks()  # Record the start time of phase 2
 
+                # Determine the direction of the triangle when phase 2 starts
+                triangle_direction = choose_triangle_direction()
+
         elif current_phase == 2:
             # Calculate time in phase 2 based on the start time of this trial
             time_in_phase2 = (current_time - start_phase2_time) // 1000
 
             # Play music in phase 2 if it hasn't been played yet
             if not music_played:
-                barulho_fase2.play()
+                barulho_phase2.play()
                 music_played = True  # Set the flag to indicate that music has been played
 
             # Draw elements during the second phase
@@ -117,16 +149,30 @@ for trial in range(1, num_trials + 1):
             pygame.draw.line(screen, line_color, line_start, line_end, line_thickness)
 
             if time_in_phase2 < 1:  # Display both triangle images for the first 1 second
-                triangle_vertices = [(width // 2, height // 2 - 60),
-                                     (width // 2 - 40, height // 2 + 2),
-                                     (width // 2 + 40, height // 2 + 2)]
+                if triangle_direction == 1:
+                    # Draw the triangle pointing up
+                    triangle_vertices = [(width // 2, height // 2 - 60),
+                                         (width // 2 - 40, height // 2 + 2),
+                                         (width // 2 + 40, height // 2 + 2)]
+                else:
+                    # Draw the triangle pointing down
+                    triangle_vertices = [(width // 2, height // 2 + 60),
+                                         (width // 2 - 40, height // 2 - 2),
+                                         (width // 2 + 40, height // 2 - 2)]
 
                 pygame.draw.polygon(screen, yellow, triangle_vertices)
             else:
                 # Display only the outlined version for the rest of the phase
-                triangle_vertices = [(width // 2, height // 2 - 60),
-                                     (width // 2 - 40, height // 2 + 2),
-                                     (width // 2 + 40, height // 2 + 2)]
+                if triangle_direction == 1:
+                    # Draw the triangle pointing up
+                    triangle_vertices = [(width // 2, height // 2 - 60),
+                                         (width // 2 - 40, height // 2 + 2),
+                                         (width // 2 + 40, height // 2 + 2)]
+                else:
+                    # Draw the triangle pointing down
+                    triangle_vertices = [(width // 2, height // 2 + 60),
+                                         (width // 2 - 40, height // 2 - 2),
+                                         (width // 2 + 40, height // 2 - 2)]
 
                 pygame.draw.polygon(screen, yellow, triangle_vertices, 5)
 
