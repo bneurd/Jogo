@@ -89,8 +89,8 @@ class Foguete(pygame.sprite.Sprite):
         self.rect.y = max(0, min(self.rect.y, height - self.rect.height))
 
 # Main game loop
-for trial in range(1, num_trials + 1):
-
+for trial in range(1, num_trials + 1): 
+    
     # Reset phase variables for each trial
     current_phase = 1
     start_time = pygame.time.get_ticks()
@@ -106,6 +106,9 @@ for trial in range(1, num_trials + 1):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        
+        sample, timestamp = inlet.pull_sample()
+        print("got %s at time %s" % (sample[0], timestamp))
 
         sample, timestamp = inlet.pull_sample()
         print("got %s at time %s" % (sample[0], timestamp))
