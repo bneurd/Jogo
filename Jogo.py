@@ -107,8 +107,8 @@ for trial in range(1, num_trials + 1):
             if event.type == pygame.QUIT:
                 running = False
 
-         sample, timestamp = inlet.pull_sample()
-         print("got %s at time %s" % (sample[0], timestamp))
+        sample, timestamp = inlet.pull_sample()
+        print("got %s at time %s" % (sample[0], timestamp))
 
         keys = pygame.key.get_pressed()
         foguete.update(keys)
