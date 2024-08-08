@@ -7,7 +7,6 @@ pygame.init()
 
 # Screen dimensions
 info = pygame.display.Info()
-
 width = info.current_w
 height = info.current_h
 screen = pygame.display.set_mode((width - 10, height - 50))
@@ -73,20 +72,33 @@ class Foguete(pygame.sprite.Sprite):
         self.rect.bottomleft = (0, height // 2)  # Start at the middle-left of the screen
         self.speed = 2.7 # Set the initial speed
 
-    def update(self, keys):
+    def update(self):
         # Move the spaceship to the right
         self.rect.x += self.speed
 
-        # Move the spaceship up if W is pressed
-        if keys[pygame.K_w]:
-            self.rect.y -= self.speed
-
-        # Move the spaceship down if S is pressed
-        if keys[pygame.K_s]:
-            self.rect.y += self.speed
-
         # Ensure the spaceship stays within the screen boundaries
         self.rect.y = max(0, min(self.rect.y, height - self.rect.height))
+
+# Calculate scaling factor
+max_beta_value = 100
+scaling_factor = height / max_beta_value 
+
+# Update the spaceship position based on beta wave data
+def update_spaceship_position(sample_value, direction):
+    # Calculate desired position based on beta value and scaling factor
+    desired_position = sample_value * scaling_factor
+    
+    # Adjust position based on direction of the triangle
+    if direction == 1:  # Triangle pointing up
+        desired_position = height - desired_position
+    else:  # Triangle pointing down
+        desired_position = desired_position
+
+    # Limit the position within the screen boundaries
+    desired_position = max(0, min(desired_position, height - foguete.rect.y))  # Ensure spaceship remains within screen
+    
+    # Update spaceship position
+    foguete.rect.y = desired_position
 
 # Main game loop
 for trial in range(1, num_trials + 1): 
@@ -109,9 +121,6 @@ for trial in range(1, num_trials + 1):
         
         sample, timestamp = inlet.pull_sample()
         print("got %s at time %s" % (sample[0], timestamp))
-
-        keys = pygame.key.get_pressed()
-        foguete.update(keys)
 
         # Calculate elapsed time
         current_time = pygame.time.get_ticks()
@@ -177,7 +186,10 @@ for trial in range(1, num_trials + 1):
                 pygame.draw.polygon(screen, yellow, triangle_vertices, 5)
 
             all_sprites.draw(screen)
-            all_sprites.update(keys)
+            all_sprites.update()
+
+            # Update spaceship position based on received beta wave data
+            update_spaceship_position(sample[0], triangle_direction)
 
             # Check if phase 2 duration has elapsed
             if elapsed_time > phase2_duration:
