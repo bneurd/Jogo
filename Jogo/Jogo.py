@@ -41,7 +41,7 @@ music_played = False
 # Get stream on the lab network
 streams = resolve_stream('type', 'Markers')
 
-# create a new inlet to read from the stream
+# Create a new inlet to read from the stream
 inlet = StreamInlet(streams[0])
 
 last_direction = None  # Initialize the last chosen direction
@@ -70,7 +70,7 @@ class Foguete(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(original_image, (109 * 1.6, 73 * 1.6))
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (0, height // 2)  # Start at the middle-left of the screen
-        self.speed = 2.7 # Set the initial speed
+        self.speed = 50  # Set the initial speed
 
     def update(self):
         # Move the spaceship to the right
@@ -80,7 +80,7 @@ class Foguete(pygame.sprite.Sprite):
         self.rect.y = max(0, min(self.rect.y, height - self.rect.height))
 
 # Calculate scaling factor
-max_beta_value = 100
+max_beta_value = 1030
 scaling_factor = height / max_beta_value 
 
 # Update the spaceship position based on beta wave data
@@ -95,10 +95,10 @@ def update_spaceship_position(sample_value, direction):
         desired_position = desired_position
 
     # Limit the position within the screen boundaries
-    desired_position = max(0, min(desired_position, height - foguete.rect.y))  # Ensure spaceship remains within screen
+    desired_position = max(0, min(desired_position, height - foguete.rect.height))  # Ensure spaceship remains within screen
     
-    # Update spaceship position
-    foguete.rect.y = desired_position
+    # Smooth movement
+    foguete.rect.y += (desired_position - foguete.rect.y) * 0.1  # Adjust this factor for smoother or faster movement
 
 # Main game loop
 for trial in range(1, num_trials + 1): 
